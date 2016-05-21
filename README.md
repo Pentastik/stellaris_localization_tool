@@ -55,9 +55,11 @@ check [ods file sheet](files/some_localization_info.ods)
 
 # Other Links
 
-[Korean Translation Community](http://cafe.daum.net/Europa)
-[Korean Translation Workspace](http://team-waldo.xyz/zanata/project/view/StellarisKR)
-[Japanese Translation Workspace](https://docs.google.com/spreadsheets/d/1k1kwkF45TMvxDZZguuSaVME0lYwNPGLMkjjjUwU3BC8/edit#gid=0)
+* [Korean Translation Community](http://cafe.daum.net/Europa)
+* [Korean Translation Workspace](http://team-waldo.xyz/zanata/project/view/StellarisKR)
+* [Japanese Translation Workspace](https://docs.google.com/spreadsheets/d/1k1kwkF45TMvxDZZguuSaVME0lYwNPGLMkjjjUwU3BC8/edit#gid=0)
 
 
 # License
+
+* [LICENSE.md](LICENSE.md)
