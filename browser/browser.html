@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html manifest="manifest.appcache">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+	<meta http-equiv="Pragma" content="no-cache" />
+	<meta http-equiv="Expires" content="0" />
+	<title>Stellaris Localization Browser</title>
+	<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css">
+	<link rel="stylesheet" type="text/css" href="themes/bootstrap/easyui.css">
+	<link rel="stylesheet" type="text/css" href="themes/icon.css">
+	<script type="text/javascript" src="jquery.min.js"></script>
+	<script type="text/javascript" src="js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="jquery.easyui.min.js"></script>
+</head>
+<body class="easyui-layout">
+    <nav class="navbar navbar-default navbar-fixed-top text-center">
+        <div class="container-fluid">
+            <form class="navbar-form" role="search">
+                <div class="form-group">
+                    <input id="localizationSearchKey" />
+                    <a id="localizationSearchKeyBtn" href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'">Search by KEY</a>
+                </div>
+                <div class="form-group" style="padding-left: 20px">
+                    <input id="localizationSearch" />
+                    <a id="localizationSearchBtn" href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'">Search by EN</a>
+                </div>
+                <div class="form-group" style="padding-left: 20px">
+                    <input id="localizationSearchKo" />
+                    <a id="localizationSearchKoBtn" href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'">Search by KO</a>
+                </div>
+            </form>
+        </div>
+    </nav>
+
+	<div data-options="region:'north',collapsed:false,title:'Translator'" style="height:310px;padding:5px; margin-top: 30px;">
+		<div class="container-fluid">
+			<form class="form-horizontal" role="form">
+				<div class="form-group">
+					<label class="control-label col-lg-1" for="english">ENGLISH:</label>
+					<div class="col-lg-10">
+						<textarea class="form-control" id="english" rows="4"></textarea>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label col-lg-1" for="korean">KOREAN:</label>
+					<div class="col-lg-10">
+						<textarea class="form-control" id="korean" rows="4"></textarea>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-lg-offset-1 col-lg-11">
+						<button type="button" class="btn btn-default" id="copyToClipboardBtn">Copy Korean</button>
+						<button type="button" class="btn btn-primary" id="saveBtn">Save</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+	<div data-options="region:'west',collapsed:true,title:'Common'" style="width:25%;padding:10px;">
+		<div id="tt" class="easyui-tabs" style="width:100%;height:100%;">
+			<div title="TAG" style="display:none;padding:5px;">
+				<a id="tagSearchBtn" href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'">Search</a>
+				<table id="tagGrid" style="width: 100%"></table>
+			</div>
+			<div title="KEYWORD" style="display:none;padding:5px;">
+				<a id="keywordSearchBtn" href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'">Search</a>
+				<table id="keywordGrid" style="width: 100%"></table>
+			</div>
+			<div title="POUND"  style="display:none;padding:5px;">
+				<a id="poundSearchBtn" href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'">Search</a>
+				<table id="poundGrid" style="width: 100%"></table>
+			</div>
+			<div title="PLATE"  style="display:none;padding:5px;">
+				<a id="plateSearchBtn" href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'">Search</a>
+				<table id="plateGrid" style="width: 100%"></table>
+			</div>
+			<div title="SECTION"  style="display:none;padding:5px;">
+				<a id="sectionSearchBtn" href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'">Search</a>
+				<table id="sectionGrid" style="width: 100%"></table>
+			</div>
+			<div title="YML"  style="display:none;padding:5px;">
+				<a id="ymlSearchBtn" href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'">Search</a>
+				<table id="ymlGrid" style="width: 100%"></table>
+			</div>
+		</div>
+		
+	</div>
+	<!--<div data-options="region:'south',collapsed:false,title:'Foot'" style="height:200px;padding:0px;">-->
+		<!--<textarea id="LOG" style="width: 100%; height: 100%;"></textarea>-->
+	<!--</div>-->
+	<div data-options="region:'center',collapsed:false,title:'Localization'" style="padding:5px;">
+        <table id="localizationGrid" width="100%" height="100%"></table>
+	</div>
+	<script>
+	var HOST = '192.168.0.150:8080';
+	var CHECKSUM = '48f6';
+
+	$(function(){
+		// tag
+		$('#tagGrid').datagrid({
+			columns:[[
+				{field:'id',title:'ID',width:140,hidden:true,formatter:function(value,row){
+//					return value['$oid']
+					return row._id['$oid']
+				}},
+				{field:'file_name',title:'FILE',width:130,sortable:true},
+				{field:'key',title:'KEY',width:200,sortable:true},
+			]],
+			onClickRow: function(index, row) {
+				$("#localizationSearch").val(row.key);
+				$("#localizationSearchBtn").trigger('click');
+			},
+			rownumbers: true,
+			autoRowHeight: false,
+			remoteSort: false,
+			fitColumns: true,
+			nowrap: false,
+			singleSelect: true,
+			idField: 'id'
+		});
+
+		$("#tagSearchBtn").click(function(event){
+			event.preventDefault();
+			
+			$.get('http://'+HOST+'/stellaris_'+CHECKSUM+'/tag/?pagesize=1000&sort_by=file_name&sort_by=key', function(data){
+				$("#tagGrid").datagrid('loadData', data._embedded['rh:doc']);
+			});
+		});
+
+		// keyword
+		$('#keywordGrid').datagrid({
+			columns:[[
+				{field:'id',title:'ID',width:140,hidden:true,formatter:function(value,row){
+//					return value['$oid']
+					return row._id['$oid']
+				}},
+				{field:'key',title:'KEY',width:200,sortable:true},
+				{field:'modifier',title:'MODIFIER',width:100,sortable:true},
+				{field:'text',title:'TEXT',width:100,sortable:true}
+			]],
+			onClickRow: function(index, row) {
+				$("#localizationSearch").val(row.key);
+				$("#localizationSearchBtn").trigger('click');
+			},
+			rownumbers: true,
+			autoRowHeight: false,
+			remoteSort: false,
+			fitColumns: true,
+			nowrap: false,
+			singleSelect: true,
+			idField: 'id'
+		});
+
+		$("#keywordSearchBtn").click(function(event){
+			event.preventDefault();
+
+			$.get('http://'+HOST+'/stellaris_'+CHECKSUM+'/keyword/?pagesize=3000&sort_by=key', function(data){
+				$("#keywordGrid").datagrid('loadData', data._embedded['rh:doc']);
+			});
+		});
+
+		// pound
+		$('#poundGrid').datagrid({
+			columns:[[
+				{field:'id',title:'ID',width:140,hidden:true,formatter:function(value,row){
+//					return value['$oid']
+					return row._id['$oid']
+				}},
+				{field:'key',title:'KEY',width:200,sortable:true},
+				{field:'text',title:'TEXT',width:100,sortable:true}
+			]],
+			onClickRow: function(index, row) {
+				$("#localizationSearch").val(row.key);
+				$("#localizationSearchBtn").trigger('click');
+			},
+			rownumbers: true,
+			autoRowHeight: false,
+			remoteSort: false,
+			fitColumns: true,
+			nowrap: false,
+			singleSelect: true,
+			idField: 'id'
+		});
+
+		$("#poundSearchBtn").click(function(event){
+			event.preventDefault();
+
+			$.get('http://'+HOST+'/stellaris_'+CHECKSUM+'/pound/?pagesize=1000&sort_by=key', function(data){
+				$("#poundGrid").datagrid('loadData', data._embedded['rh:doc']);
+			});
+		});
+
+		// plate
+		$('#plateGrid').datagrid({
+			columns:[[
+				{field:'id',title:'ID',width:140,hidden:true,formatter:function(value,row){
+//					return value['$oid']
+					return row._id['$oid']
+				}},
+				{field:'key',title:'KEY',width:200,sortable:true},
+				{field:'text',title:'TEXT',width:100,sortable:true}
+			]],
+			onClickRow: function(index, row) {
+				$("#localizationSearch").val(row.key);
+				$("#localizationSearchBtn").trigger('click');
+			},
+			rownumbers: true,
+			autoRowHeight: false,
+			remoteSort: false,
+			fitColumns: true,
+			nowrap: false,
+			singleSelect: true,
+			idField: 'id'
+		});
+
+		$("#plateSearchBtn").click(function(event){
+			event.preventDefault();
+
+			$.get('http://'+HOST+'/stellaris_'+CHECKSUM+'/plate/?pagesize=1000&sort_by=key', function(data){
+				$("#plateGrid").datagrid('loadData', data._embedded['rh:doc']);
+			});
+		});
+
+		// section
+		$('#sectionGrid').datagrid({
+			columns:[[
+				{field:'id',title:'ID',width:140,hidden:true,formatter:function(value,row){
+//					return value['$oid']
+					return row._id['$oid']
+				}},
+				{field:'color',title:'COLOR',width:50,sortable:true},
+				{field:'body',title:'BODY',width:100,sortable:true},
+				{field:'text',title:'TEXT',width:100,sortable:true}
+			]],
+			rownumbers: true,
+			autoRowHeight: false,
+			remoteSort: false,
+			fitColumns: true,
+			nowrap: false,
+			singleSelect: true,
+			idField: 'id'
+		});
+
+		$("#sectionSearchBtn").click(function(event){
+			event.preventDefault();
+
+			$.get('http://'+HOST+'/stellaris_'+CHECKSUM+'/section/?pagesize=3000&sort_by=body', function(data){
+				$("#sectionGrid").datagrid('loadData', data._embedded['rh:doc']);
+			});
+		});
+
+		// yml
+		$('#ymlGrid').datagrid({
+			columns:[[
+				{field:'id',title:'ID',width:140,hidden:true,formatter:function(value,row){
+//					return value['$oid']
+					return row._id['$oid']
+				}},
+				{field:'file_name',title:'FILE',width:100,sortable:true},
+				{field:'version',title:'VERSION',width:100,sortable:true},
+				{field:'checksum',title:'checksum',width:100,sortable:true}
+			]],
+			onClickRow: function(index, row) {
+				$("#localizationSearch").val(row.yml);
+				$("#localizationSearchBtn").trigger('click');
+			},
+			rownumbers: true,
+			autoRowHeight: false,
+			remoteSort: false,
+			fitColumns: true,
+			nowrap: false,
+			singleSelect: true,
+			idField: 'id'
+		});
+
+		$("#ymlSearchBtn").click(function(event){
+			event.preventDefault();
+
+			$.get('http://'+HOST+'/stellaris_'+CHECKSUM+'/yml/?pagesize=1000&sort_by=file_name', function(data){
+				$("#ymlGrid").datagrid('loadData', data._embedded['rh:doc']);
+			});
+		});
+
+		// localization
+		$('#localizationGrid').datagrid({
+			columns:[[
+				{field:'id',title:'ID',width:120,hidden:true,formatter:function(value,row){
+//					return value['$oid']
+					return row._id['$oid']
+				}},
+				{field:'type',title:'TYPE',width:40,hidden:true,sortable:true},
+				{field:'yml',title:'YML',width:130,sortable:true},
+				{field:'key',title:'KEY',width:200,sortable:true},
+				{field:'en',title:'en',width:300,sortable:true},
+				{field:'ko',title:'ko',width:300,sortable:true}
+			]],
+			onClickRow: function(index, row) {
+				$("#english").val(row.en);
+				$("#translated").val(row.en);
+				$("#korean").val(row.ko);
+			},
+			onLoadSuccess: function(data) {
+				$(this).datagrid('unselectAll');
+			},
+//            height: 600,
+			rownumbers: true,
+			autoRowHeight: false,
+			remoteSort: false,
+			fitColumns: true,
+			nowrap: false,
+			singleSelect: true,
+            multiSort: true,
+			idField: 'id'
+		});
+
+		$("#localizationSearchKeyBtn").click(function(event){
+			event.preventDefault();
+
+			var search = $("#localizationSearchKey").val();
+
+			if(search != '') {
+				var url = 'http://'+HOST+'/stellaris_'+CHECKSUM+'/localization/?count&pagesize=3000&sort_by=key&sort_by=en&filter={ "$or": [ {"key":{"$regex":"'+search+'","$options":"i"}} ] }';
+				$.get(url, function(data){
+					if(data && data._returned > 0) {
+//						msg(data._returned + ' of ' + data._size);
+
+						$("#localizationGrid").datagrid('loadData', data._embedded['rh:doc']);
+					} else {
+						msg('No Data');
+					}
+				});
+			}
+		});
+
+		$("#localizationSearchBtn").click(function(event){
+			event.preventDefault();
+
+			var search = $("#localizationSearch").val();
+
+			if(search != '') {
+				var url = 'http://'+HOST+'/stellaris_'+CHECKSUM+'/localization/?count&pagesize=3000&sort_by=key&sort_by=en&filter={ "$or": [ {"en":{"$regex":"'+search+'","$options":"i"}} ] }';
+				$.get(url, function(data){
+					if(data && data._returned > 0) {
+//						msg(data._returned + ' of ' + data._size);
+
+						$("#localizationGrid").datagrid('loadData', data._embedded['rh:doc']);
+					} else {
+						msg('No Data');
+					}
+				});
+			}
+		});
+
+		$("#localizationSearchKoBtn").click(function(event){
+			event.preventDefault();
+
+			var search = $("#localizationSearchKo").val();
+
+			if(search != '') {
+				var url = 'http://'+HOST+'/stellaris_'+CHECKSUM+'/localization/?count&pagesize=3000&sort_by=key&sort_by=en&filter={ "$or": [ {"ko":{"$regex":"'+search+'","$options":"i"}} ] }';
+				$.get(url, function(data){
+					if(data && data._returned > 0) {
+//						msg(data._returned + ' of ' + data._size);
+
+						$("#localizationGrid").datagrid('loadData', data._embedded['rh:doc']);
+					} else {
+						msg('No Data');
+					}
+				});
+			}
+		});
+
+		// copy
+		$("#copyToClipboardBtn").click(function(event){
+			event.preventDefault();
+
+			$("#english").select();
+			document.execCommand("copy");
+
+			msg('copy ok!');
+		});
+
+		$("#saveBtn").click(function(event){
+			event.preventDefault();
+
+			var selected = $("#localizationGrid").datagrid("getSelected");
+
+			if(selected) {
+				console.log(selected);
+
+				var id = selected._id['$oid'];
+				var ko = $("#korean").val();
+				var url = 'http://'+HOST+'/stellaris_'+CHECKSUM+'/localization/' + id;
+				$.ajax(url, {
+					method: 'PATCH',
+					contentType: 'application/json',
+					processData: false,
+					data: JSON.stringify({
+						ko: ko
+					})
+				})
+				.then(
+					function success(data){
+						msg('saved!');
+
+//						$("#localizationSearchBtn").trigger('click');
+					}
+				);
+			}
+		});
+
+		$("#korean").keypress(function(event){
+			if(event.which == 13) {
+				event.preventDefault();
+
+				$("#saveBtn").trigger('click');
+			}
+		});
+
+		$("#localizationSearchKey").keypress(function(event){
+			if(event.which == 13) {
+				event.preventDefault();
+
+				$("#localizationSearchKeyBtn").trigger('click');
+			}
+		});
+
+		$("#localizationSearch").keypress(function(event){
+			if(event.which == 13) {
+				event.preventDefault();
+
+				$("#localizationSearchBtn").trigger('click');
+			}
+		});
+
+		$("#localizationSearchKo").keypress(function(event){
+			if(event.which == 13) {
+				event.preventDefault();
+
+				$("#localizationSearchKoBtn").trigger('click');
+			}
+		});
+	});
+
+	function msg(txt) {
+		$.messager.show({'title':'Info', 'msg':txt, style:{
+            left:0,
+            right:'',
+            top:document.body.scrollTop+document.documentElement.scrollTop,
+            bottom:'',
+            timeout:0,
+            showType:'fade'
+        }});
+	};
+	</script>
+</body>
+</html>
