@@ -63,3 +63,10 @@ check [ods file sheet](files/some_localization_info.ods)
 # License
 
 * [LICENSE.md](LICENSE.md)
+
+
+# Screenshots
+
+![run main.py](https://github.com/Pentastik/stellaris_localization_tool/raw/master/files/output-example.PNG)
+
+![browser](https://github.com/Pentastik/stellaris_localization_tool/raw/master/files/browser-example.PNG)
